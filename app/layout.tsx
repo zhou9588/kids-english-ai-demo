@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Nunito } from "next/font/google";
 import "./globals.css";
+import "./adventure.css";
 
 const nunito = Nunito({
   variable: "--font-nunito",
@@ -9,18 +10,18 @@ const nunito = Nunito({
 });
 
 export const metadata: Metadata = {
-  title: "小芽英语 · 儿童AI跟读启蒙",
-  description: "儿童英语单词发音、跟读练习与趣味学习进度 Demo。",
+  title: "小芽英语 V2 · 儿童英语冒险",
+  description: "听、说、选、写、收集五步儿童英语启蒙冒险。",
   icons: {
     icon: "/favicon.svg",
     shortcut: "/favicon.svg",
   },
   openGraph: {
-    title: "小芽英语 · 每天勇敢开口说",
-    description: "每天 3–5 个主题单词，听发音、练跟读、智能复习。",
-    images: [{ url: "/og.png", width: 1731, height: 909, alt: "小芽英语儿童英语启蒙" }],
+    title: "小芽英语 V2 · 儿童英语冒险",
+    description: "听、说、选、写、收集，每次只完成一个小任务。",
+    images: [{ url: "/og-v2.png", width: 1731, height: 909, alt: "小芽英语 V2 儿童英语冒险" }],
   },
-  twitter: { card: "summary_large_image", images: ["/og.png"] },
+  twitter: { card: "summary_large_image", images: ["/og-v2.png"] },
 };
 
 export default function RootLayout({

@@ -1,66 +1,64 @@
 "use client";
 import { useEffect, useMemo, useRef, useState } from "react";
 
-type Word={word:string;phonetic:string;zh:string;emoji:string;bubble:string;sentence:string;tone:string;theme:string;score:number;tip:string};
-const bank:Word[]=[
- {word:"apple",phonetic:"/ˈæp.əl/",zh:"苹果",emoji:"🍎",bubble:"Yummy!",sentence:"An apple is red.",tone:"coral",theme:"水果乐园",score:92,tip:"开头的 /æ/ 音很清楚！"},
- {word:"banana",phonetic:"/bəˈnɑː.nə/",zh:"香蕉",emoji:"🍌",bubble:"Sweet!",sentence:"I like bananas.",tone:"yellow",theme:"水果乐园",score:90,tip:"每个音节都读得很完整！"},
- {word:"orange",phonetic:"/ˈɒr.ɪndʒ/",zh:"橙子",emoji:"🍊",bubble:"Juicy!",sentence:"The orange is round.",tone:"coral",theme:"水果乐园",score:91,tip:"结尾的 /dʒ/ 音很棒！"},
- {word:"grape",phonetic:"/ɡreɪp/",zh:"葡萄",emoji:"🍇",bubble:"Pop!",sentence:"These grapes are purple.",tone:"violet",theme:"水果乐园",score:93,tip:"长元音 /eɪ/ 很清楚！"},
- {word:"cat",phonetic:"/kæt/",zh:"小猫",emoji:"🐱",bubble:"Meow!",sentence:"The cat is cute.",tone:"violet",theme:"动物朋友",score:88,tip:"短短的 /æ/ 音读得很好！"},
- {word:"dog",phonetic:"/dɒɡ/",zh:"小狗",emoji:"🐶",bubble:"Woof!",sentence:"The dog can run.",tone:"yellow",theme:"动物朋友",score:95,tip:"结尾的 /g/ 音很有力！"},
- {word:"bird",phonetic:"/bɜːd/",zh:"小鸟",emoji:"🐦",bubble:"Tweet!",sentence:"A bird can fly.",tone:"mint",theme:"动物朋友",score:90,tip:"中间的长音读得很稳！"},
- {word:"fish",phonetic:"/fɪʃ/",zh:"小鱼",emoji:"🐟",bubble:"Splash!",sentence:"The fish can swim.",tone:"mint",theme:"动物朋友",score:92,tip:"结尾的 /ʃ/ 音很轻！"},
- {word:"red",phonetic:"/red/",zh:"红色",emoji:"🔴",bubble:"Bright!",sentence:"My ball is red.",tone:"coral",theme:"彩虹颜色",score:94,tip:"开头的 /r/ 音很自然！"},
- {word:"blue",phonetic:"/bluː/",zh:"蓝色",emoji:"🔵",bubble:"Cool!",sentence:"The sky is blue.",tone:"mint",theme:"彩虹颜色",score:91,tip:"结尾的 /uː/ 音拉得很好！"},
- {word:"green",phonetic:"/ɡriːn/",zh:"绿色",emoji:"🟢",bubble:"Fresh!",sentence:"The leaf is green.",tone:"mint",theme:"彩虹颜色",score:90,tip:"长音 /iː/ 很清楚！"},
- {word:"yellow",phonetic:"/ˈjel.əʊ/",zh:"黄色",emoji:"🟡",bubble:"Sunny!",sentence:"The sun is yellow.",tone:"yellow",theme:"彩虹颜色",score:93,tip:"两个音节衔接得很好！"},
- {word:"mom",phonetic:"/mɒm/",zh:"妈妈",emoji:"👩",bubble:"Hello!",sentence:"My mom is kind.",tone:"coral",theme:"我的家人",score:94,tip:"两个 /m/ 音都很清楚！"},
- {word:"dad",phonetic:"/dæd/",zh:"爸爸",emoji:"👨",bubble:"Hi!",sentence:"My dad is funny.",tone:"mint",theme:"我的家人",score:92,tip:"开头和结尾都读得很完整！"},
- {word:"baby",phonetic:"/ˈbeɪ.bi/",zh:"宝宝",emoji:"👶",bubble:"Giggle!",sentence:"The baby is happy.",tone:"yellow",theme:"我的家人",score:91,tip:"重音放得很准确！"},
- {word:"family",phonetic:"/ˈfæm.əl.i/",zh:"家人",emoji:"👨‍👩‍👧",bubble:"Together!",sentence:"I love my family.",tone:"violet",theme:"我的家人",score:89,tip:"三个音节读得很有节奏！"},
- {word:"book",phonetic:"/bʊk/",zh:"书",emoji:"📚",bubble:"Read!",sentence:"This is my book.",tone:"violet",theme:"快乐课堂",score:93,tip:"短元音 /ʊ/ 很准确！"},
- {word:"pen",phonetic:"/pen/",zh:"笔",emoji:"✏️",bubble:"Write!",sentence:"I have a pen.",tone:"yellow",theme:"快乐课堂",score:94,tip:"每个音都很清楚！"},
- {word:"bag",phonetic:"/bæɡ/",zh:"书包",emoji:"🎒",bubble:"Ready!",sentence:"My bag is purple.",tone:"coral",theme:"快乐课堂",score:91,tip:"结尾的 /g/ 音很棒！"},
- {word:"school",phonetic:"/skuːl/",zh:"学校",emoji:"🏫",bubble:"Let’s go!",sentence:"I go to school.",tone:"mint",theme:"快乐课堂",score:90,tip:"辅音组合 /sk/ 读得很好！"}
+type Word={word:string;phonetic:string;zh:string;emoji:string;bubble:string;sentence:string;tone:string;theme:string;score:number};
+const rows:(string|number)[][]=[
+ ["apple","/ˈæp.əl/","苹果","🍎","Yummy!","An apple is red.","coral","水果乐园",92],["banana","/bəˈnɑː.nə/","香蕉","🍌","Sweet!","I like bananas.","yellow","水果乐园",90],["orange","/ˈɒr.ɪndʒ/","橙子","🍊","Juicy!","The orange is round.","coral","水果乐园",91],["grape","/ɡreɪp/","葡萄","🍇","Pop!","These grapes are purple.","violet","水果乐园",93],
+ ["cat","/kæt/","小猫","🐱","Meow!","The cat is cute.","violet","动物朋友",88],["dog","/dɒɡ/","小狗","🐶","Woof!","The dog can run.","yellow","动物朋友",95],["bird","/bɜːd/","小鸟","🐦","Tweet!","A bird can fly.","mint","动物朋友",90],["fish","/fɪʃ/","小鱼","🐟","Splash!","The fish can swim.","mint","动物朋友",92],
+ ["red","/red/","红色","🔴","Bright!","My ball is red.","coral","彩虹颜色",94],["blue","/bluː/","蓝色","🔵","Cool!","The sky is blue.","mint","彩虹颜色",91],["green","/ɡriːn/","绿色","🟢","Fresh!","The leaf is green.","mint","彩虹颜色",90],["yellow","/ˈjel.əʊ/","黄色","🟡","Sunny!","The sun is yellow.","yellow","彩虹颜色",93],
+ ["mom","/mɒm/","妈妈","👩","Hello!","My mom is kind.","coral","我的家人",94],["dad","/dæd/","爸爸","👨","Hi!","My dad is funny.","mint","我的家人",92],["baby","/ˈbeɪ.bi/","宝宝","👶","Giggle!","The baby is happy.","yellow","我的家人",91],["family","/ˈfæm.əl.i/","家人","👨‍👩‍👧","Together!","I love my family.","violet","我的家人",89],
+ ["book","/bʊk/","书","📚","Read!","This is my book.","violet","快乐课堂",93],["pen","/pen/","笔","✏️","Write!","I have a pen.","yellow","快乐课堂",94],["bag","/bæɡ/","书包","🎒","Ready!","My bag is purple.","coral","快乐课堂",91],["school","/skuːl/","学校","🏫","Let’s go!","I go to school.","mint","快乐课堂",90]
 ];
-const key="sprout-english-v2";
-function dayNumber(date:string){return Math.floor((new Date(`${date}T12:00:00`).getTime()-new Date("2026-01-01T12:00:00").getTime())/86400000)}
-function isoDate(d:Date){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`}
+const bank:Word[]=rows.map(r=>({word:String(r[0]),phonetic:String(r[1]),zh:String(r[2]),emoji:String(r[3]),bubble:String(r[4]),sentence:String(r[5]),tone:String(r[6]),theme:String(r[7]),score:Number(r[8])}));
+const storageKey="sprout-adventure-v3";
+type Stage="welcome"|"listen"|"speak"|"choose"|"write"|"reward"|"finished";
+function iso(d:Date){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`}
+function dayNo(s:string){return Math.max(0,Math.floor((new Date(`${s}T12:00:00`).getTime()-new Date("2026-01-01T12:00:00").getTime())/86400000))}
 
-function WritingPad({word,onSpeak,onComplete}:{word:string;onSpeak:()=>void;onComplete:()=>void}){
- const canvas=useRef<HTMLCanvasElement|null>(null), drawing=useRef(false), history=useRef<ImageData[]>([]); const [mode,setMode]=useState<"trace"|"free">("trace"); const [hasInk,setHasInk]=useState(false);
- function ctx(){return canvas.current?.getContext("2d")||null}
- function point(e:React.PointerEvent<HTMLCanvasElement>){const r=e.currentTarget.getBoundingClientRect();return{x:(e.clientX-r.left)*(e.currentTarget.width/r.width),y:(e.clientY-r.top)*(e.currentTarget.height/r.height)}}
- function down(e:React.PointerEvent<HTMLCanvasElement>){const c=ctx();if(!c)return;e.currentTarget.setPointerCapture(e.pointerId);const p=point(e);c.beginPath();c.moveTo(p.x,p.y);c.lineWidth=10;c.lineCap="round";c.lineJoin="round";c.strokeStyle="#7258d8";drawing.current=true}
- function move(e:React.PointerEvent<HTMLCanvasElement>){if(!drawing.current)return;const c=ctx();if(!c)return;const p=point(e);c.lineTo(p.x,p.y);c.stroke()}
- function up(){if(!drawing.current||!canvas.current)return;drawing.current=false;history.current.push(ctx()!.getImageData(0,0,canvas.current.width,canvas.current.height));setHasInk(true)}
- function clear(){ctx()?.clearRect(0,0,canvas.current!.width,canvas.current!.height);history.current=[];setHasInk(false)}
- function undo(){history.current.pop();const c=ctx();if(!c||!canvas.current)return;c.clearRect(0,0,canvas.current.width,canvas.current.height);const last=history.current.at(-1);if(last)c.putImageData(last,0,0);setHasInk(!!last)}
- useEffect(()=>{clear()},[word,mode]);
- return <section className="writing-panel"><div className="writing-head"><div><b>✍️ 写一写：{word}</b><small>用手指、触控笔或鼠标书写</small></div><div className="mode-tabs"><button className={mode==="trace"?"selected":""} onClick={()=>setMode("trace")}>描红</button><button className={mode==="free"?"selected":""} onClick={()=>setMode("free")}>自由写</button></div></div><div className="canvas-wrap">{mode==="trace"&&<span>{word}</span>}<canvas ref={canvas} width="900" height="260" onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up}/></div><div className="writing-actions"><button onClick={onSpeak}>🔊 听发音</button><button onClick={undo}>↶ 撤销</button><button onClick={clear}>清除</button><button className="finish-write" disabled={!hasInk} onClick={onComplete}>完成书写 ⭐</button></div></section>
+function LetterPad({letter,onDone}:{letter:string;onDone:()=>void}){
+ const ref=useRef<HTMLCanvasElement|null>(null),draw=useRef(false);const [ink,setInk]=useState(false);
+ function context(){return ref.current?.getContext("2d")||null}
+ function p(e:React.PointerEvent<HTMLCanvasElement>){const r=e.currentTarget.getBoundingClientRect();return{x:(e.clientX-r.left)*e.currentTarget.width/r.width,y:(e.clientY-r.top)*e.currentTarget.height/r.height}}
+ function down(e:React.PointerEvent<HTMLCanvasElement>){const c=context();if(!c)return;e.currentTarget.setPointerCapture(e.pointerId);const q=p(e);c.beginPath();c.moveTo(q.x,q.y);c.lineWidth=14;c.lineCap="round";c.lineJoin="round";c.strokeStyle="#6f57d9";draw.current=true}
+ function move(e:React.PointerEvent<HTMLCanvasElement>){if(!draw.current)return;const c=context(),q=p(e);if(c){c.lineTo(q.x,q.y);c.stroke()}}
+ function up(){if(draw.current){draw.current=false;setInk(true)}}
+ function clear(){context()?.clearRect(0,0,ref.current!.width,ref.current!.height);setInk(false)}
+ useEffect(clear,[letter]);
+ return <div className="letter-practice"><div className="letter-guide"><span className="start-dot">1</span><b>{letter}</b><div className="guide-line top"/><div className="guide-line middle"/><div className="guide-line bottom"/><canvas ref={ref} width="520" height="300" onPointerDown={down} onPointerMove={move} onPointerUp={up} onPointerCancel={up}/></div><div className="letter-actions"><button onClick={clear}>↻ 重新写</button><button className="adventure-primary compact" disabled={!ink} onClick={onDone}>{ink?"完成这个字母 →":"沿着字母写一写"}</button></div></div>
 }
 
 export default function Home(){
- const today=isoDate(new Date()); const [date,setDate]=useState(today); const [amount,setAmount]=useState(3); const [current,setCurrent]=useState(0); const [done,setDone]=useState<Record<string,string[]>>({}); const [recording,setRecording]=useState(false); const [result,setResult]=useState(false); const [settings,setSettings]=useState(false); const [writing,setWriting]=useState(false); const [writeDone,setWriteDone]=useState<Record<string,string[]>>({}); const timer=useRef<ReturnType<typeof setTimeout>|null>(null);
- useEffect(()=>{try{const saved=JSON.parse(localStorage.getItem(key)||"{}");setDone(saved.done||{});setWriteDone(saved.writeDone||{});setAmount(saved.amount||3)}catch{}},[]);
- useEffect(()=>{localStorage.setItem(key,JSON.stringify({done,writeDone,amount}))},[done,writeDone,amount]);
- const lesson=useMemo(()=>{const n=Math.max(0,dayNumber(date));const start=(n*amount)%bank.length;const fresh=Array.from({length:amount},(_,i)=>bank[(start+i)%bank.length]);const learned=new Set(Object.values(done).flat());if(n%3===0&&learned.size&&fresh.length>2){const review=bank.find(w=>learned.has(w.word)&&!fresh.some(x=>x.word===w.word));if(review)fresh[fresh.length-1]={...review,theme:`复习 · ${review.theme}`}}return fresh},[date,amount,done]);
- useEffect(()=>{setCurrent(0);setResult(false);setRecording(false);setWriting(false)},[date,amount]);
- const item=lesson[current]||bank[0], completed=done[date]||[], complete=lesson.filter(w=>completed.includes(w.word)).length;
- function speak(text:string){if(!("speechSynthesis" in window))return; speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang="en-US";u.rate=.72;u.pitch=1.08;speechSynthesis.speak(u)}
- async function practice(){setResult(false);setRecording(true);let stream:MediaStream|undefined;try{stream=await navigator.mediaDevices?.getUserMedia({audio:true})}catch{}timer.current=setTimeout(()=>{stream?.getTracks().forEach(t=>t.stop());setRecording(false);setResult(true);setDone(x=>({...x,[date]:Array.from(new Set([...(x[date]||[]),item.word]))}))},2200)}
- function changeDay(step:number){const d=new Date(`${date}T12:00:00`);d.setDate(d.getDate()+step);setDate(isoDate(d))}
- const label=date===today?"今天":new Date(`${date}T12:00:00`).toLocaleDateString("zh-CN",{month:"short",day:"numeric"});
- return <main>
-  <header className="topbar"><div className="brand"><span className="brand-mark">A</span><span><b>小芽英语</b><small>和小芽一起开口说</small></span></div><div className="date-nav"><button onClick={()=>changeDay(-1)}>‹</button><b>{label}</b><button onClick={()=>changeDay(1)}>›</button></div><div className="today"><span>本日学习</span><b>{complete} / {lesson.length}</b><div className="mini-progress"><i style={{width:`${complete/lesson.length*100}%`}}/></div></div><button className="parent" onClick={()=>setSettings(!settings)}>⚙️ <span>家长设置</span></button></header>
-  {settings&&<section className="settings"><div><b>每日学习数量</b><small>建议初学者每天 3 个词</small></div>{[3,4,5].map(n=><button key={n} className={amount===n?"selected":""} onClick={()=>setAmount(n)}>{n} 个</button>)}<button className="close" onClick={()=>setSettings(false)}>完成</button></section>}
-  <section className="hero"><div><p className="eyebrow">DAY {String(Math.max(1,dayNumber(date)+1)).padStart(2,"0")} · {lesson[0]?.theme}</p><h1>你好，小小探险家！<br/><span>{date===today?"今天":"这一天"}学 {lesson.length} 个单词</span></h1><p className="subtitle">每天一点点，听一听，再勇敢地说出来。</p></div><div className="mascot"><span>⭐</span><div>Hi!</div></div></section>
-  <section className="workspace"><nav className="word-list"><p>{label}的单词</p>{lesson.map((w,i)=><button key={`${w.word}-${i}`} onClick={()=>{setCurrent(i);setResult(false)}} className={`word-tab ${i===current?"active":""}`}><span className={`tab-emoji ${w.tone}`}>{w.emoji}</span><span><b>{w.word}</b><small>{w.zh}{w.theme.startsWith("复习")?" · 复习":""}</small></span>{completed.includes(w.word)?<i className="done">✓</i>:<i className="arrow">›</i>}</button>)}<div className="streak"><span>🔥</span><p><b>已积累 {new Set(Object.values(done).flat()).size} 个单词</b><small>学习记录保存在这台设备</small></p></div></nav>
-  <article className="lesson-card"><div className="step-line"><span className="on">1 听一听</span><i/><span className={recording||result?"on":""}>2 读一读</span><i/><span className={writing?"on":""}>3 写一写</span><i/><span className={result||writeDone[date]?.includes(item.word)?"on":""}>4 得星星</span></div><div className={`picture ${item.tone}`}><span>{item.emoji}</span><div className="bubble">{item.bubble}</div></div><div className="word-heading"><h2>{item.word}</h2><p>{item.phonetic} · {item.zh}</p></div><div className="skill-buttons"><button className="listen" onClick={()=>speak(item.word)}><span>🔊</span><b>听单词发音</b><small>点我听一听</small></button><button className={`write-button ${writing?"active":""}`} onClick={()=>setWriting(!writing)}><span>✍️</span><b>写一写</b><small>{writeDone[date]?.includes(item.word)?"已完成":"描红或自由写"}</small></button></div><p className="example"><span>例句</span> {item.sentence} <button onClick={()=>speak(item.sentence)}>🔈</button></p>
-  {writing&&<WritingPad word={item.word} onSpeak={()=>speak(item.word)} onComplete={()=>{setWriteDone(x=>({...x,[date]:Array.from(new Set([...(x[date]||[]),item.word]))}));setWriting(false)}}/>}
-  {!result?<div className={`practice ${recording?"is-recording":""}`}><div className="waves"><i/><i/><i/><i/><i/></div><button onClick={practice}><span>🎙️</span></button><div className="practice-copy"><b>{recording?"正在听你读…":"轮到你啦！"}</b><small>{recording?`大声读：${item.word}`:"点击麦克风，大声读出单词"}</small></div></div>:<div className="result"><div className="score"><b>{item.score}</b><span>分</span></div><div><h3>太棒啦！ ⭐</h3><p>{item.tip}</p><small>演示评分 · 正式版将接入音素级评测</small></div><button onClick={practice}>再读一次</button></div>}
-  <div className="next-row"><span>本日获得 <b>{complete*2} ⭐</b></span><button onClick={()=>{setCurrent((current+1)%lesson.length);setResult(false)}}>{current===lesson.length-1?"回到第一个":"下一个单词"} <b>→</b></button></div></article></section>
-  <footer><span>💡</span><p><b>智能复习</b> 每隔几天，课程会自动加入一个学过的单词；更换设备时学习记录不会自动同步。</p></footer>
+ const today=iso(new Date());const [date,setDate]=useState(today),[amount,setAmount]=useState(3),[done,setDone]=useState<Record<string,string[]>>({}),[stage,setStage]=useState<Stage>("welcome"),[index,setIndex]=useState(0),[recording,setRecording]=useState(false),[wrong,setWrong]=useState(false),[letter,setLetter]=useState(0),[settings,setSettings]=useState(false),[hydrated,setHydrated]=useState(false);const timer=useRef<ReturnType<typeof setTimeout>|null>(null);
+ useEffect(()=>{try{const s=JSON.parse(localStorage.getItem(storageKey)||"{}");setDone(s.done||{});setAmount(s.amount||3)}catch{}setHydrated(true)},[]);
+ useEffect(()=>{if(hydrated)localStorage.setItem(storageKey,JSON.stringify({done,amount}))},[done,amount,hydrated]);
+ const lesson=useMemo(()=>{const start=(dayNo(date)*amount)%bank.length;return Array.from({length:amount},(_,i)=>bank[(start+i)%bank.length])},[date,amount]);
+ const item=lesson[index]||bank[0],completed=done[date]||[],finished=lesson.filter(w=>completed.includes(w.word)).length;
+ const choices=useMemo(()=>{const a=[item,bank[(bank.indexOf(item)+5)%bank.length],bank[(bank.indexOf(item)+11)%bank.length]];const shift=index%3;return [...a.slice(shift),...a.slice(0,shift)]},[item,index]);
+ function speak(text:string){if(!("speechSynthesis" in window))return;window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang="en-US";u.rate=.7;u.pitch=1.08;window.speechSynthesis.speak(u)}
+ function beginListen(){speak(item.word);setTimeout(()=>setStage("speak"),1150)}
+ async function record(){setRecording(true);let stream:MediaStream|undefined;try{stream=await navigator.mediaDevices?.getUserMedia({audio:true})}catch{}timer.current=setTimeout(()=>{stream?.getTracks().forEach(t=>t.stop());setRecording(false);setStage("choose")},2100)}
+ function choose(w:Word){if(w.word===item.word){setWrong(false);setStage("write");setLetter(0)}else{setWrong(true);setTimeout(()=>setWrong(false),900)}}
+ function nextLetter(){if(letter<item.word.length-1)setLetter(n=>n+1);else setStage("reward")}
+ function collect(){setDone(x=>({...x,[date]:Array.from(new Set([...(x[date]||[]),item.word]))}));if(index<lesson.length-1){setIndex(n=>n+1);setStage("listen");setLetter(0)}else setStage("finished")}
+ function resetDay(){setIndex(0);setStage("welcome");setLetter(0);setWrong(false)}
+ function changeDate(n:number){const d=new Date(`${date}T12:00:00`);d.setDate(d.getDate()+n);setDate(iso(d));resetDay()}
+ const stageNumber=stage==="welcome"?0:stage==="listen"?1:stage==="speak"?2:stage==="choose"?3:stage==="write"?4:5;
+ return <main className="adventure-shell">
+  <header className="adventure-header"><div className="brand"><span className="brand-mark">A</span><span><b>小芽英语</b><small>今日英语冒险</small></span></div><div className="journey-dots" aria-label="本日学习进度">{lesson.map((w,i)=><i key={w.word} className={completed.includes(w.word)?"done":i===index&&stage!=="welcome"?"current":""}>{completed.includes(w.word)?"✓":i+1}</i>)}</div><button className="parent" onClick={()=>setSettings(!settings)}>⚙️ <span>家长中心</span></button></header>
+  {settings&&<section className="adventure-settings"><div><b>家长设置</b><small>孩子的主界面只保留当前任务</small></div><span>每日</span>{[3,4,5].map(n=><button key={n} className={amount===n?"selected":""} onClick={()=>{setAmount(n);resetDay()}}>{n}词</button>)}<button onClick={()=>changeDate(-1)}>前一天</button><button onClick={()=>{setDate(today);resetDay()}}>回到今天</button><button className="close" onClick={()=>setSettings(false)}>完成</button></section>}
+  <section className="adventure-main">
+   <aside className="companion"><img src="/mascot-v2.png" alt="小芽星星陪学角色"/><div className="speech-bubble">{stage==="welcome"?`准备好去${lesson[0]?.theme}了吗？`:stage==="listen"?"小耳朵准备好，听我读！":stage==="speak"?"现在轮到你开口啦！":stage==="choose"?"听得真认真，找一找吧！":stage==="write"?"一个字母一个字母来！":stage==="reward"?"你完成了一颗单词星！":"今天的冒险完成啦！"}</div></aside>
+   <article className={`quest-card stage-${stage}`}>
+    {stage!=="welcome"&&stage!=="finished"&&<div className="quest-progress"><span>单词 {index+1}/{lesson.length}</span><div>{[1,2,3,4,5].map(n=><i key={n} className={n<=stageNumber?"on":""}/>)}</div><b>{["","听","说","选","写","奖励"][stageNumber]}</b></div>}
+    {stage==="welcome"&&<div className="welcome-stage"><p>DAY {dayNo(date)+1} · {lesson[0]?.theme}</p><h1>今天去哪里探险？</h1><div className="island-card"><span>{lesson.map(w=>w.emoji).join("  ")}</span><b>{lesson[0]?.theme}</b><small>{lesson.length} 颗单词星等你收集</small></div><button className="adventure-primary" onClick={()=>setStage("listen")}>开始今天的冒险 <b>→</b></button></div>}
+    {stage==="listen"&&<div className="single-stage"><p className="stage-label">第一关 · 听一听</p><div className={`hero-object ${item.tone}`}><span>{item.emoji}</span><i>{item.bubble}</i></div><h1>{item.word}</h1><p className="word-meta">{item.zh} · {item.phonetic}</p><button className="adventure-primary" onClick={beginListen}>🔊 听小芽读一遍</button></div>}
+    {stage==="speak"&&<div className="single-stage"><p className="stage-label">第二关 · 勇敢说</p><div className={`hero-object small ${item.tone}`}><span>{item.emoji}</span></div><h1>{item.word}</h1><button className={`big-mic ${recording?"recording":""}`} onClick={record} disabled={recording}>🎙️</button><h2>{recording?"小芽正在认真听…":"大声读出来吧！"}</h2><small>{recording?"说完后会自动进入下一关":"点击麦克风开始"}</small></div>}
+    {stage==="choose"&&<div className="single-stage"><p className="stage-label">第三关 · 找一找</p><h2>哪一个是 <strong>{item.word}</strong>？</h2><button className="tiny-listen" onClick={()=>speak(item.word)}>🔊 再听一次</button><div className={`choice-grid ${wrong?"shake":""}`}>{choices.map(w=><button key={w.word} onClick={()=>choose(w)}><span>{w.emoji}</span><b>{w.zh}</b></button>)}</div>{wrong&&<p className="gentle-tip">差一点点，再听听看 💛</p>}</div>}
+    {stage==="write"&&<div className="single-stage write-stage"><p className="stage-label">第四关 · 写一写</p><h2>写第 {letter+1} 个字母</h2><div className="spelling-row">{item.word.split("").map((c,i)=><span key={i} className={i<letter?"done":i===letter?"current":""}>{i<letter?"✓":c}</span>)}</div><LetterPad letter={item.word[letter]} onDone={nextLetter}/></div>}
+    {stage==="reward"&&<div className="reward-stage"><div className="confetti">✦　·　★　·　✦</div><span className="reward-sticker">{item.emoji}</span><p>新贴纸收集成功</p><h1>{item.word}</h1><h2>太棒啦，读、找、写都完成了！</h2><div className="reward-stars">⭐ ⭐ ⭐</div><button className="adventure-primary" onClick={collect}>{index<lesson.length-1?"收好贴纸，继续探险 →":"收好最后一张贴纸 →"}</button></div>}
+    {stage==="finished"&&<div className="finished-stage"><span>🏆</span><h1>今日冒险完成！</h1><p>你收集了 {lesson.length} 张单词贴纸</p><div className="sticker-shelf">{lesson.map(w=><i key={w.word}>{w.emoji}<small>{w.word}</small></i>)}</div><button className="adventure-primary" onClick={()=>{resetDay();setDate(today)}}>再玩一次</button></div>}
+   </article>
+  </section>
+  <footer className="adventure-footer"><span>家长提示</span> 每关只呈现一个任务；语音得分仍为演示反馈，重点是鼓励孩子开口。</footer>
  </main>
 }
