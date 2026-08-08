@@ -15,6 +15,12 @@ export const metadata: Metadata = {
     icon: "/favicon.svg",
     shortcut: "/favicon.svg",
   },
+  openGraph: {
+    title: "小芽英语 · 每天勇敢开口说",
+    description: "每天 3–5 个主题单词，听发音、练跟读、智能复习。",
+    images: [{ url: "/og.png", width: 1731, height: 909, alt: "小芽英语儿童英语启蒙" }],
+  },
+  twitter: { card: "summary_large_image", images: ["/og.png"] },
 };
 
 export default function RootLayout({

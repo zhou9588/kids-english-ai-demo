@@ -5,17 +5,19 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>小芽英语 · 儿童跟读 Demo</title>
   <meta name="description" content="儿童英语单词发音、跟读练习与趣味学习进度 Demo" />
+  <meta property="og:title" content="小芽英语 · 每天勇敢开口说" /><meta property="og:description" content="每天 3–5 个主题单词，听发音、练跟读、智能复习。" /><meta property="og:image" content="og.png" />
   <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="extra.css" />
 </head>
 <body>
   <header>
     <div class="brand"><span>A</span><div><b>小芽英语</b><small>和小芽一起开口说</small></div></div>
-    <div class="progress"><small>今日学习 <b id="count">0 / 3</b></small><i><em id="bar"></em></i></div>
+    <div class="dateNav"><button id="prevDay">‹</button><b id="dateLabel">今天</b><button id="nextDay">›</button></div><div class="progress"><small>本日学习 <b id="count">0 / 3</b></small><i><em id="bar"></em></i></div><button id="settingsBtn" class="settingsBtn">⚙️ 家长设置</button>
   </header>
   <main>
-    <section class="intro"><div><p>LESSON 01 · 我的动物朋友</p><h1>你好，小小探险家！<br><span>今天学 3 个新单词</span></h1><small>先听一听，再勇敢地大声读出来吧。</small></div><div class="star">⭐<b>Hi!</b></div></section>
+    <section id="settings" class="settings"><div><b>每日学习数量</b><small>建议初学者每天 3 个词</small></div><button class="amount" data-n="3">3 个</button><button class="amount" data-n="4">4 个</button><button class="amount" data-n="5">5 个</button><button id="settingsDone">完成</button></section><section class="intro"><div><p id="lessonName">DAY 01 · 水果乐园</p><h1>你好，小小探险家！<br><span id="headline">今天学 3 个单词</span></h1><small>每天一点点，听一听，再勇敢地说出来。</small></div><div class="star">⭐<b>Hi!</b></div></section>
     <section class="app">
-      <nav><p>今天的单词</p><div id="tabs"></div><aside>🔥 <span><b>连续学习 1 天</b><small>明天再来，小火苗会长大！</small></span></aside></nav>
+      <nav><p>本日单词</p><div id="tabs"></div><aside>🔥 <span><b id="learnedTotal">已积累 0 个单词</b><small>学习记录保存在这台设备</small></span></aside></nav>
       <article>
         <div class="steps"><b>1 听一听</b><i></i><span>2 读一读</span><i></i><span>3 得星星</span></div>
         <div id="picture" class="picture"><span id="emoji">🍎</span><b id="bubble">Yummy!</b></div>
@@ -26,7 +28,7 @@
         <div class="next"><span>本课获得 <b id="stars">0 ⭐</b></span><button id="next">下一个单词 →</button></div>
       </article>
     </section>
-    <footer>💡 <span><b>给家长的小提示</b> 每天练习 5–10 分钟就够啦。多鼓励、少纠错，让孩子爱上开口说英语！</span></footer>
+    <footer>💡 <span><b>智能复习</b> 每隔几天，课程会自动加入一个学过的单词；更换设备时学习记录不会自动同步。</span></footer>
   </main>
   <script src="app.js"></script>
 </body>
