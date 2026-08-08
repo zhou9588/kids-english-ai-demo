@@ -22,9 +22,10 @@
         <div class="steps"><b>1 听一听</b><i></i><span>2 读一读</span><i></i><span>3 得星星</span></div>
         <div id="picture" class="picture"><span id="emoji">🍎</span><b id="bubble">Yummy!</b></div>
         <h2 id="word">apple</h2><p id="phonetic">/ˈæp.əl/ · 苹果</p>
-        <button id="listen" class="listen">🔊 <span><b>听单词发音</b><small>点我听一听</small></span></button>
+        <div class="skillButtons"><button id="listen" class="listen">🔊 <span><b>听单词发音</b><small>点我听一听</small></span></button><button id="writeBtn" class="writeBtn">✍️ <span><b>写一写</b><small>描红或自由写</small></span></button></div>
         <p class="sentence"><b>例句</b> <span id="example">An apple is red.</span> <button id="speakSentence">🔈</button></p>
         <div id="practice" class="practice"><span class="waves">▂▅▃▆▂</span><button id="mic">🎙️</button><div><b id="prompt">轮到你啦！</b><small id="hint">点击麦克风，大声读出单词</small></div></div>
+        <section id="writing" class="writing"><div class="writingHead"><div><b>✍️ 写一写：<span id="writeWord">apple</span></b><small>用手指、触控笔或鼠标书写</small></div><div><button class="writeMode selected" data-mode="trace">描红</button><button class="writeMode" data-mode="free">自由写</button></div></div><div class="canvasWrap"><span id="traceWord">apple</span><canvas id="pad" width="900" height="260"></canvas></div><div class="writeActions"><button id="hearWrite">🔊 听发音</button><button id="undoWrite">↶ 撤销</button><button id="clearWrite">清除</button><button id="finishWrite" disabled>完成书写 ⭐</button></div></section>
         <div class="next"><span>本课获得 <b id="stars">0 ⭐</b></span><button id="next">下一个单词 →</button></div>
       </article>
     </section>
