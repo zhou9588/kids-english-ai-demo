@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>小芽英语 · 儿童跟读 Demo</title>
+  <meta name="description" content="儿童英语单词发音、跟读练习与趣味学习进度 Demo" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header>
+    <div class="brand"><span>A</span><div><b>小芽英语</b><small>和小芽一起开口说</small></div></div>
+    <div class="progress"><small>今日学习 <b id="count">0 / 3</b></small><i><em id="bar"></em></i></div>
+  </header>
+  <main>
+    <section class="intro"><div><p>LESSON 01 · 我的动物朋友</p><h1>你好，小小探险家！<br><span>今天学 3 个新单词</span></h1><small>先听一听，再勇敢地大声读出来吧。</small></div><div class="star">⭐<b>Hi!</b></div></section>
+    <section class="app">
+      <nav><p>今天的单词</p><div id="tabs"></div><aside>🔥 <span><b>连续学习 1 天</b><small>明天再来，小火苗会长大！</small></span></aside></nav>
+      <article>
+        <div class="steps"><b>1 听一听</b><i></i><span>2 读一读</span><i></i><span>3 得星星</span></div>
+        <div id="picture" class="picture"><span id="emoji">🍎</span><b id="bubble">Yummy!</b></div>
+        <h2 id="word">apple</h2><p id="phonetic">/ˈæp.əl/ · 苹果</p>
+        <button id="listen" class="listen">🔊 <span><b>听单词发音</b><small>点我听一听</small></span></button>
+        <p class="sentence"><b>例句</b> <span id="example">An apple is red.</span> <button id="speakSentence">🔈</button></p>
+        <div id="practice" class="practice"><span class="waves">▂▅▃▆▂</span><button id="mic">🎙️</button><div><b id="prompt">轮到你啦！</b><small id="hint">点击麦克风，大声读出单词</small></div></div>
+        <div class="next"><span>本课获得 <b id="stars">0 ⭐</b></span><button id="next">下一个单词 →</button></div>
+      </article>
+    </section>
+    <footer>💡 <span><b>给家长的小提示</b> 每天练习 5–10 分钟就够啦。多鼓励、少纠错，让孩子爱上开口说英语！</span></footer>
+  </main>
+  <script src="app.js"></script>
+</body>
+</html>

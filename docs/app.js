@@ -1,0 +1,13 @@
+const words=[
+  {word:'apple',phonetic:'/ˈæp.əl/',zh:'苹果',emoji:'🍎',bubble:'Yummy!',sentence:'An apple is red.',tone:'coral',score:92,tip:'开头的 /æ/ 音很清楚！'},
+  {word:'cat',phonetic:'/kæt/',zh:'小猫',emoji:'🐱',bubble:'Meow!',sentence:'The cat is cute.',tone:'violet',score:88,tip:'短短的 /æ/ 音读得很好！'},
+  {word:'dog',phonetic:'/dɒɡ/',zh:'小狗',emoji:'🐶',bubble:'Woof!',sentence:'The dog can run.',tone:'yellow',score:95,tip:'结尾的 /g/ 音很有力！'}
+];
+let current=0, learned=[false,false,false], recording=false, timer;
+const $=id=>document.getElementById(id);
+function speak(text){ if(!('speechSynthesis' in window)) return alert('当前浏览器不支持语音播放'); speechSynthesis.cancel(); const u=new SpeechSynthesisUtterance(text);u.lang='en-US';u.rate=.72;u.pitch=1.08;speechSynthesis.speak(u); }
+function render(){const w=words[current];$('emoji').textContent=w.emoji;$('bubble').textContent=w.bubble;$('word').textContent=w.word;$('phonetic').textContent=`${w.phonetic} · ${w.zh}`;$('example').textContent=w.sentence;$('picture').className=`picture ${w.tone}`;$('tabs').innerHTML=words.map((x,i)=>`<button class="tab ${i===current?'active':''}" data-i="${i}"><span>${x.emoji}</span><div><b>${x.word}</b><small>${x.zh}</small></div><em>${learned[i]?'✓':'›'}</em></button>`).join('');document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{current=+b.dataset.i;reset();render()});const done=learned.filter(Boolean).length;$('count').textContent=`${done} / 3`;$('bar').style.width=`${done/3*100}%`;$('stars').textContent=`${done*2} ⭐`;$('next').textContent=current===2?'回到第一个 →':'下一个单词 →';}
+function reset(){clearTimeout(timer);recording=false;$('practice').className='practice';$('practice').innerHTML='<span class="waves">▂▅▃▆▂</span><button id="mic">🎙️</button><div><b id="prompt">轮到你啦！</b><small id="hint">点击麦克风，大声读出单词</small></div>';$('mic').onclick=start;}
+async function start(){recording=true;$('practice').className='practice recording';$('prompt').textContent='正在听你读…';$('hint').textContent=`大声读：${words[current].word}`;let stream;try{stream=await navigator.mediaDevices?.getUserMedia({audio:true})}catch(e){}timer=setTimeout(()=>{stream?.getTracks().forEach(t=>t.stop());finish()},2300)}
+function finish(){if(!recording)return;recording=false;learned[current]=true;const w=words[current];$('practice').className='result';$('practice').innerHTML=`<strong>${w.score}<small>分</small></strong><div><b>太棒啦！ ⭐</b><p>${w.tip}</p><small>演示评分 · 正式版将接入音素级评测</small></div><button id="again">再读一次</button>`;$('again').onclick=()=>{reset();render()};render()}
+$('listen').onclick=()=>speak(words[current].word);$('speakSentence').onclick=()=>speak(words[current].sentence);$('next').onclick=()=>{current=(current+1)%3;reset();render()};reset();render();
