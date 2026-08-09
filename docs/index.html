@@ -41,7 +41,7 @@
         <div class="guideBar">
           <div class="mascot"><img src="mascot-v2.png" alt="小芽星星陪学角色"><b>小芽</b></div>
           <div class="guideSpeech"><small id="guideEyebrow">第 1 关</small><b id="guideMessage">先听小芽读一遍吧！</b></div>
-          <div class="wordBadge"><span id="miniEmoji">🍎</span><b id="miniWord">apple</b></div>
+          <button id="wordBadge" class="wordBadge" aria-label="播放 apple 的发音"><span id="miniEmoji">🍎</span><b id="miniWord">apple</b><i class="soundCue" aria-hidden="true">🔊</i></button>
         </div>
 
         <div id="stepRail" class="steps adventureSteps" aria-label="学习步骤">
@@ -49,7 +49,7 @@
         </div>
 
         <section id="listenStage" class="stage listenStage" data-stage="0">
-          <div id="picture" class="picture coral"><span id="emoji">🍎</span><b id="bubble">Yummy!</b></div>
+          <button id="picture" class="picture coral" aria-label="播放 apple 的发音"><span id="emoji">🍎</span><b id="bubble">Yummy!</b><i class="soundCue" aria-hidden="true">🔊</i></button>
           <h2 id="word">apple</h2><p id="phonetic">/ˈæp.əl/ · 苹果</p>
           <button id="listenAction" class="primaryAction soundAction">🔊 <span><b>听单词发音</b><small>点一下，认真听</small></span></button>
           <button id="listenNext" class="primaryAction nextAction" hidden>我听到了，轮到我说 <span>→</span></button>
@@ -57,7 +57,7 @@
         </section>
 
         <section id="speakStage" class="stage speakStage" data-stage="1" hidden>
-          <div class="stageTitle"><span id="speakEmoji">🍎</span><div><small>大声读出</small><h2 id="speakWord">apple</h2></div></div>
+          <div class="stageTitle"><button id="speakPicture" class="speakPicture" aria-label="播放 apple 的发音"><span id="speakEmoji">🍎</span><i class="soundCue" aria-hidden="true">🔊</i></button><div><small>大声读出</small><h2 id="speakWord">apple</h2></div></div>
           <div id="speakPanel" class="speakPanel">
             <div class="soundWaves" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
             <button id="micAction" class="micAction" aria-label="开始跟读">🎙️</button>
@@ -80,21 +80,20 @@
             <button id="hearWrite" class="roundSound" aria-label="播放当前单词">🔊</button>
           </div>
           <div id="letterTrail" class="letterTrail" aria-label="字母书写进度"></div>
-          <div class="tracePrompt"><span id="traceStatus">先看小芽示范，再轮到你：</span><b id="letterName">a</b></div>
+          <div class="tracePrompt"><span id="traceStatus">沿着浅色字母描一遍：</span><b id="letterName">a</b></div>
           <div id="canvasWrap" class="canvasWrap">
             <div class="guideLines" aria-hidden="true"><i></i><i></i><i></i></div><span id="traceLetter">a</span>
-            <canvas id="guidePad" class="guideCanvas" width="900" height="340" aria-hidden="true"></canvas>
             <canvas id="pad" width="900" height="340" aria-label="字母描写画板"></canvas>
           </div>
           <div id="writeProgress" class="writeProgress" role="progressbar" aria-label="当前字母书写进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="writeProgressBar"></i></div>
-          <div class="writeActions"><button id="watchTrace">▶ 再看示范</button><button id="undoWrite">↶ 撤销</button><button id="clearWrite">清除</button></div>
+          <div class="writeActions"><button id="undoWrite">↶ 撤销</button><button id="clearWrite">清除</button></div>
           <small class="demoNote">写够后会自动进入下一个字母；演示版按笔画长度给予鼓励，正式版可接入字母形状识别。</small>
         </section>
 
         <section id="rewardStage" class="stage rewardStage" data-stage="4" hidden>
           <div class="confetti" aria-hidden="true"><i>●</i><i>★</i><i>◆</i><i>●</i><i>★</i><i>◆</i></div>
           <small>闯关成功</small><h2>你得到一张新贴纸！</h2>
-          <div class="rewardSticker"><span id="rewardEmoji">🍎</span><b id="rewardWord">apple</b><i>NEW</i></div>
+          <button id="rewardSticker" class="rewardSticker" aria-label="播放 apple 的发音"><span id="rewardEmoji">🍎</span><b id="rewardWord">apple</b><i>NEW</i><em class="soundCue" aria-hidden="true">🔊</em></button>
           <p>听、说、认、写都完成了，小芽为你鼓掌！</p>
           <div class="rewardStats"><span>⭐ 今日获得 <b id="stars">0</b></span><span>🏅 收藏 <b id="rewardTotal">0</b></span></div>
           <div class="stageActions rewardActions"><button id="playAgain" class="softAction">再玩一遍</button><button id="nextWord" class="primaryAction">下一个单词 <span>→</span></button></div>

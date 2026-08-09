@@ -150,12 +150,14 @@ function render() {
 
   $('tabs').innerHTML = items.map((item,index) => {
     const done = completed.includes(item.word);
-    return `<button class="tab ${index===current?'active':''} ${done?'finished':''}" data-i="${index}" aria-current="${index===current?'step':'false'}"><span>${item.emoji}</span><div><b>${item.word}</b><small>${item.zh}${item.review?' · 复习':''}</small></div><em>${done?'✓':index===current?'•':'›'}</em></button>`;
+    return `<button class="tab ${index===current?'active':''} ${done?'finished':''}" data-i="${index}" aria-current="${index===current?'step':'false'}" aria-label="选择并播放 ${item.word}，${item.zh}"><span class="tabPicture">${item.emoji}<i aria-hidden="true">🔊</i></span><div><b>${item.word}</b><small>${item.zh}${item.review?' · 复习':''}</small></div><em>${done?'✓':index===current?'•':'›'}</em></button>`;
   }).join('');
   document.querySelectorAll('.tab').forEach((button) => {
     button.addEventListener('click', () => {
       current = Number(button.dataset.i);
+      const selectedWord = items[current].word;
       render();
+      speak(selectedWord);
     });
   });
 
@@ -175,6 +177,9 @@ function render() {
   $('writeWord').textContent = w.word;
   $('rewardEmoji').textContent = w.emoji;
   $('rewardWord').textContent = w.word;
+  ['picture','speakPicture','rewardSticker','wordBadge'].forEach((id) => {
+    $(id).setAttribute('aria-label',`播放 ${w.word} 的英文发音`);
+  });
 
   renderStep(w, flowStep(w.word));
 }
@@ -220,6 +225,9 @@ $('listenAction').addEventListener('click', () => {
 });
 $('listenNext').addEventListener('click', () => goToStep(1));
 $('speakSentence').addEventListener('click', () => speak(currentWord().sentence));
+['picture','speakPicture','rewardSticker','wordBadge'].forEach((id) => {
+  $(id).addEventListener('click', () => speak(currentWord().word));
+});
 
 function cleanupMic() {
   micRun += 1;
@@ -291,12 +299,15 @@ function choiceOptions(w) {
 }
 
 function renderChoices(w) {
-  $('choiceGrid').innerHTML = choiceOptions(w).map((item) => `<button class="pictureChoice" data-word="${item.word}" aria-label="${item.zh}"><span>${item.emoji}</span><b>${item.zh}</b></button>`).join('');
+  $('choiceGrid').innerHTML = choiceOptions(w).map((item) => `<button class="pictureChoice" data-word="${item.word}" aria-label="播放 ${item.word} 并选择${item.zh}"><span>${item.emoji}<i aria-hidden="true">🔊</i></span><b>${item.zh}</b></button>`).join('');
   $('choiceFeedback').textContent = '点一张图片试试看';
   $('choiceFeedback').className = 'choiceFeedback';
   $('choiceNext').hidden = true;
   document.querySelectorAll('.pictureChoice').forEach((button) => {
-    button.addEventListener('click', () => checkChoice(button,w));
+    button.addEventListener('click', () => {
+      speak(button.dataset.word);
+      checkChoice(button,w);
+    });
   });
 }
 
@@ -323,51 +334,20 @@ $('choiceNext').addEventListener('click', () => goToStep(3));
 
 const pad = $('pad');
 const pctx = pad.getContext('2d');
-const guidePad = $('guidePad');
-const guideCtx = guidePad.getContext('2d');
 let penDown = false;
 let lastPoint = null;
 let inkDistance = 0;
 let inkHistory = [];
 let letterIndex = 0;
-let guideFrame = 0;
 let traceAdvanceTimer = null;
 let traceCompleting = false;
-
-// Simple child-friendly stroke routes. They are animated on Canvas and cover
-// every lower-case letter currently used by the lesson bank.
-const guidePaths = {
-  a:[[[68,56],[66,43],[57,35],[44,35],[34,44],[31,57],[35,70],[46,77],[58,73],[66,63]],[[67,36],[67,77]]],
-  b:[[[38,18],[38,78]],[[39,56],[43,44],[53,38],[64,41],[70,51],[69,64],[61,73],[50,76],[40,69]]],
-  c:[[[70,42],[62,35],[49,34],[38,40],[32,51],[32,64],[39,73],[51,77],[63,74],[70,68]]],
-  d:[[[66,56],[64,43],[55,36],[43,36],[34,45],[32,58],[36,70],[47,76],[58,72],[66,63]],[[67,18],[67,77]]],
-  e:[[[70,57],[33,57],[35,46],[43,38],[55,35],[65,39],[70,48],[68,55],[59,58],[34,58],[36,68],[45,75],[57,77],[68,72]]],
-  f:[[[61,20],[53,18],[46,23],[43,33],[43,78]],[[31,45],[61,45]]],
-  g:[[[66,56],[64,43],[55,36],[43,36],[34,45],[32,58],[36,70],[47,76],[58,72],[66,63]],[[67,37],[67,76],[64,87],[55,92],[43,89]]],
-  h:[[[38,18],[38,78]],[[39,53],[45,42],[55,38],[65,42],[68,52],[68,78]]],
-  i:[[[50,25]],[[50,43],[50,78]]],
-  k:[[[38,18],[38,78]],[[68,39],[39,61]],[[50,53],[70,78]]],
-  l:[[[49,18],[49,70],[53,77],[62,77]]],
-  m:[[[27,42],[27,78]],[[28,51],[35,41],[44,39],[51,47],[51,78]],[[52,50],[59,41],[68,40],[74,48],[74,78]]],
-  n:[[[35,41],[35,78]],[[36,52],[44,42],[55,39],[65,45],[67,55],[67,78]]],
-  o:[[[70,56],[67,43],[58,35],[46,34],[36,41],[31,53],[33,66],[41,74],[53,77],[64,71],[70,60],[70,56]]],
-  p:[[[36,40],[36,91]],[[37,53],[43,42],[54,37],[65,42],[70,53],[68,66],[59,74],[47,73],[38,64]]],
-  r:[[[38,41],[38,78]],[[39,54],[46,44],[55,40],[66,42]]],
-  s:[[[69,41],[61,35],[49,35],[39,40],[36,48],[41,55],[58,59],[67,65],[65,72],[56,77],[44,76],[35,70]]],
-  t:[[[50,22],[50,67],[54,75],[64,76]],[[35,43],[66,43]]],
-  u:[[[34,41],[34,64],[38,73],[48,77],[58,73],[66,63],[66,41]],[[67,41],[67,78]]],
-  w:[[[27,42],[34,77],[46,54],[55,77],[66,42],[74,77]]],
-  y:[[[31,41],[38,65],[48,75],[59,69],[67,55],[70,41]],[[69,42],[67,73],[63,86],[54,92],[43,89]]]
-};
+let activePointerId = null;
 
 function cleanupTrace() {
-  if (guideFrame) cancelAnimationFrame(guideFrame);
-  guideFrame = 0;
   clearTimeout(traceAdvanceTimer);
   traceAdvanceTimer = null;
   traceCompleting = false;
-  guideCtx?.clearRect(0,0,guidePad.width,guidePad.height);
-  $('canvasWrap')?.classList.remove('demonstrating','demoFinished','traceSuccess');
+  $('canvasWrap')?.classList.remove('traceSuccess');
   pad?.classList.remove('locked');
 }
 
@@ -386,7 +366,6 @@ function prepareTrace(w) {
   letterIndex = Math.max(0, Math.min(traceRecord(w.word), w.word.length-1));
   updateTraceUI(w);
   clearPad();
-  startGuideDemo(w.word[letterIndex]);
 }
 
 function updateTraceUI(w) {
@@ -394,120 +373,15 @@ function updateTraceUI(w) {
   $('letterTrail').innerHTML = letters.map((letter,index) => `<span class="${index<letterIndex?'done':index===letterIndex?'current':''}">${index<letterIndex?'✓':letter}</span>`).join('');
   $('letterName').textContent = letters[letterIndex];
   $('traceLetter').textContent = letters[letterIndex];
-  $('traceStatus').textContent = '先看小芽示范，再轮到你：';
-  setGuide(3,`先看字母 ${letters[letterIndex]} 怎么写。`);
-}
-
-function scaledGuide(letter) {
-  const source = guidePaths[letter] || [[[35,25],[65,25],[65,76],[35,76],[35,25]]];
-  const scale = pad.height * .82 / 100;
-  const left = (pad.width - 100 * scale) / 2;
-  const top = (pad.height - 100 * scale) / 2;
-  return source.map((stroke) => stroke.map(([x,y]) => ({x:left+x*scale,y:top+y*scale})));
-}
-
-function strokeLength(stroke) {
-  return stroke.slice(1).reduce((sum,point,index) => sum + Math.hypot(point.x-stroke[index].x,point.y-stroke[index].y),0);
-}
-
-function drawGuideProgress(strokes, progress) {
-  guideCtx.clearRect(0,0,guidePad.width,guidePad.height);
-  const lengths = strokes.map(strokeLength);
-  const pause = 34;
-  const total = lengths.reduce((sum,length) => sum+length,0) + pause * Math.max(0,strokes.length-1);
-  let remaining = total * progress;
-  let head = null;
-
-  strokes.forEach((stroke,strokeIndex) => {
-    const start = stroke[0];
-    guideCtx.beginPath();
-    guideCtx.fillStyle = '#ff897d';
-    guideCtx.arc(start.x,start.y,11,0,Math.PI*2);
-    guideCtx.fill();
-    guideCtx.fillStyle = '#fff';
-    guideCtx.font = '900 13px Arial';
-    guideCtx.textAlign = 'center';
-    guideCtx.textBaseline = 'middle';
-    guideCtx.fillText(String(strokeIndex+1),start.x,start.y+.5);
-    if (remaining <= 0) return;
-    if (stroke.length === 1) { head = start; remaining -= pause; return; }
-
-    guideCtx.beginPath();
-    guideCtx.moveTo(start.x,start.y);
-    guideCtx.strokeStyle = '#ff897d';
-    guideCtx.lineWidth = 16;
-    guideCtx.lineCap = 'round';
-    guideCtx.lineJoin = 'round';
-    for (let i=1; i<stroke.length; i+=1) {
-      const from = stroke[i-1];
-      const to = stroke[i];
-      const length = Math.hypot(to.x-from.x,to.y-from.y);
-      if (remaining >= length) {
-        guideCtx.lineTo(to.x,to.y);
-        head = to;
-        remaining -= length;
-      } else if (remaining > 0) {
-        const ratio = remaining/length;
-        head = {x:from.x+(to.x-from.x)*ratio,y:from.y+(to.y-from.y)*ratio};
-        guideCtx.lineTo(head.x,head.y);
-        remaining = 0;
-      }
-    }
-    guideCtx.stroke();
-    remaining -= pause;
-  });
-
-  if (head && progress < 1) {
-    guideCtx.beginPath();
-    guideCtx.fillStyle = '#fff';
-    guideCtx.arc(head.x,head.y,8,0,Math.PI*2);
-    guideCtx.fill();
-    guideCtx.strokeStyle = '#ff897d';
-    guideCtx.lineWidth = 5;
-    guideCtx.stroke();
-  }
-}
-
-function startGuideDemo(letter) {
-  if (traceCompleting) return;
-  if (guideFrame) cancelAnimationFrame(guideFrame);
-  const wrap = $('canvasWrap');
-  wrap.classList.remove('demoFinished');
-  wrap.classList.add('demonstrating');
-  $('traceStatus').textContent = '看小芽从起点开始写：';
-  $('watchTrace').disabled = true;
-  const strokes = scaledGuide(letter);
-  const started = performance.now();
-  const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-  const duration = reduceMotion ? 320 : 1500 + strokes.length * 170;
-  const animate = (now) => {
-    const progress = Math.min(1,(now-started)/duration);
-    drawGuideProgress(strokes,progress);
-    if (progress < 1) {
-      guideFrame = requestAnimationFrame(animate);
-      return;
-    }
-    guideFrame = 0;
-    wrap.classList.remove('demonstrating');
-    wrap.classList.add('demoFinished');
-    $('traceStatus').textContent = '轮到你啦，沿着示范写一遍：';
-    $('watchTrace').disabled = false;
-    setGuide(3,`轮到你写字母 ${letter} 啦！`);
-  };
-  guideFrame = requestAnimationFrame(animate);
-}
-
-function stopGuideDemo() {
-  if (guideFrame) cancelAnimationFrame(guideFrame);
-  guideFrame = 0;
-  guideCtx.clearRect(0,0,guidePad.width,guidePad.height);
-  $('canvasWrap').classList.remove('demonstrating','demoFinished');
-  $('watchTrace').disabled = false;
+  $('traceStatus').textContent = '沿着浅色字母描一遍：';
+  setGuide(3,`现在写字母 ${letters[letterIndex]}，慢慢来。`);
 }
 
 function requiredInkDistance(letter) {
-  const total = scaledGuide(letter).reduce((sum,stroke) => sum+strokeLength(stroke),0);
-  return Math.max(100,Math.min(260,total*.52));
+  if ('il'.includes(letter)) return 95;
+  if ('ctuv'.includes(letter)) return 145;
+  if ('mw'.includes(letter)) return 230;
+  return 180;
 }
 
 function updateWriteProgress() {
@@ -528,14 +402,15 @@ function clearPad() {
   inkHistory = [];
   inkDistance = 0;
   penDown = false;
+  activePointerId = null;
   lastPoint = null;
   updateWriteProgress();
 }
 
 function startStroke(event) {
-  if (traceCompleting) return;
+  if (traceCompleting || activePointerId !== null) return;
   event.preventDefault();
-  stopGuideDemo();
+  activePointerId = event.pointerId;
   pad.setPointerCapture?.(event.pointerId);
   const point = padPoint(event);
   penDown = true;
@@ -550,7 +425,7 @@ function startStroke(event) {
 }
 
 function moveStroke(event) {
-  if (!penDown) return;
+  if (!penDown || activePointerId !== event.pointerId) return;
   event.preventDefault();
   const points = event.getCoalescedEvents ? event.getCoalescedEvents() : [event];
   points.forEach((sample) => {
@@ -564,9 +439,10 @@ function moveStroke(event) {
 }
 
 function endStroke(event) {
-  if (!penDown) return;
+  if (!penDown || activePointerId !== event.pointerId) return;
   event.preventDefault();
   penDown = false;
+  activePointerId = null;
   lastPoint = null;
   inkHistory.push({image:pctx.getImageData(0,0,pad.width,pad.height),distance:inkDistance});
   if (updateWriteProgress() >= 100) completeLetterAutomatically();
@@ -574,9 +450,10 @@ function endStroke(event) {
 }
 
 function cancelStroke(event) {
-  if (!penDown) return;
+  if (!penDown || activePointerId !== event.pointerId) return;
   event.preventDefault();
   penDown = false;
+  activePointerId = null;
   lastPoint = null;
   $('traceStatus').textContent = '没关系，继续沿着字母写：';
 }
@@ -599,16 +476,13 @@ $('undoWrite').addEventListener('click', () => {
   updateWriteProgress();
 });
 $('hearWrite').addEventListener('click', () => speak(currentWord().word));
-$('watchTrace').addEventListener('click', () => startGuideDemo(currentWord().word[letterIndex]));
 
 function completeLetterAutomatically() {
   if (traceCompleting) return;
   traceCompleting = true;
-  stopGuideDemo();
   const wrap = $('canvasWrap');
   wrap.classList.add('traceSuccess');
   pad.classList.add('locked');
-  $('watchTrace').disabled = true;
   const w = currentWord();
   const lastLetter = letterIndex === w.word.length-1;
   $('traceStatus').textContent = lastLetter ? '整个单词写完啦！' : '写好啦，马上到下一个字母！';
@@ -625,7 +499,6 @@ function completeLetterAutomatically() {
       setTraceRecord(w.word,letterIndex);
       updateTraceUI(w);
       clearPad();
-      startGuideDemo(w.word[letterIndex]);
       return;
     }
     state.done[date] = [...new Set([...(state.done[date] || []),w.word])];
