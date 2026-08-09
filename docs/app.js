@@ -661,7 +661,7 @@ function completeLetterAutomatically() {
     setFlowStep(w.word,4);
     save();
     render();
-  },760);
+  },1100);
 }
 
 function renderReward(w) {
