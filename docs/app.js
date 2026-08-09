@@ -451,11 +451,11 @@ function choiceOptions(w) {
   return choices;
 }
 
-function renderChoices(w) {
+function renderChoices(w,keepNext=false) {
   $('choiceGrid').innerHTML = choiceOptions(w).map((item) => `<button class="pictureChoice" data-word="${item.word}" aria-label="播放 ${item.word} 并选择${item.zh}"><span>${item.emoji}<i aria-hidden="true">🔊</i></span><b>${item.zh}</b></button>`).join('');
-  $('choiceFeedback').textContent = '点一张图片试试看';
+  $('choiceFeedback').textContent = keepNext ? '再选一次吧，想继续时也可以去写字母' : '点一张图片试试看';
   $('choiceFeedback').className = 'choiceFeedback';
-  $('choiceNext').hidden = true;
+  $('choiceActions').hidden = !keepNext;
   document.querySelectorAll('.pictureChoice').forEach((button) => {
     button.addEventListener('click', () => {
       speak(button.dataset.word);
@@ -478,11 +478,17 @@ function checkChoice(button,w) {
   button.classList.add('correct');
   $('choiceFeedback').textContent = `找对啦！${w.word} 就是 ${w.zh}`;
   $('choiceFeedback').className = 'choiceFeedback correct';
-  $('choiceNext').hidden = false;
+  $('choiceActions').hidden = false;
   setGuide(2,'眼睛真亮！我们去写字母吧。');
 }
 
 $('choiceHear').addEventListener('click', () => speak(currentWord().word));
+$('choiceAgain').addEventListener('click', () => {
+  const w = currentWord();
+  renderChoices(w,true);
+  speak(w.word);
+  setGuide(2,'再玩一次！听声音，重新选一张图片。');
+});
 $('choiceNext').addEventListener('click', () => goToStep(3));
 
 const pad = $('pad');
@@ -557,6 +563,7 @@ function clearPad() {
   penDown = false;
   activePointerId = null;
   lastPoint = null;
+  $('clearWrite').textContent = '清除重写';
   updateWriteProgress();
 }
 
@@ -616,8 +623,30 @@ pad.addEventListener('pointermove',moveStroke);
 pad.addEventListener('pointerup',endStroke);
 pad.addEventListener('pointercancel',cancelStroke);
 
+function unlockTraceForRewrite() {
+  clearTimeout(traceAdvanceTimer);
+  traceAdvanceTimer = null;
+  traceCompleting = false;
+  $('canvasWrap').classList.remove('traceSuccess');
+  pad.classList.remove('locked');
+}
+
 $('clearWrite').addEventListener('click',() => {
-  if (!traceCompleting) clearPad();
+  unlockTraceForRewrite();
+  clearPad();
+  $('traceStatus').textContent = '好呀，再写一次这个字母：';
+  setGuide(3,`再写一次字母 ${currentWord().word[letterIndex]}，慢慢来。`);
+});
+$('restartWord').addEventListener('click',() => {
+  const w = currentWord();
+  unlockTraceForRewrite();
+  letterIndex = 0;
+  setTraceRecord(w.word,0);
+  updateTraceUI(w);
+  clearPad();
+  $('traceStatus').textContent = '从第一个字母重新写起：';
+  setGuide(3,`好呀，从字母 ${w.word[0]} 开始重写 ${w.word}。`);
+  $('liveMessage').textContent = `${w.word} 已回到第一个字母`;
 });
 $('undoWrite').addEventListener('click', () => {
   if (traceCompleting) return;
@@ -639,6 +668,7 @@ function completeLetterAutomatically() {
   const w = currentWord();
   const lastLetter = letterIndex === w.word.length-1;
   $('traceStatus').textContent = lastLetter ? '整个单词写完啦！' : '写好啦，马上到下一个字母！';
+  $('clearWrite').textContent = '再写一次';
   setGuide(3,lastLetter ? `${w.word} 写完啦，去领贴纸！` : '写得真棒，自动进入下一个字母。');
   $('liveMessage').textContent = lastLetter ? `${w.word} 书写完成` : `字母 ${w.word[letterIndex]} 书写完成`;
 
@@ -678,6 +708,12 @@ $('playAgain').addEventListener('click', () => {
   setTraceRecord(w.word,0);
   setFlowStep(w.word,0);
   render();
+});
+
+$('rewardWriteAgain').addEventListener('click', () => {
+  const w = currentWord();
+  setTraceRecord(w.word,0);
+  goToStep(3);
 });
 
 $('nextWord').addEventListener('click', () => {

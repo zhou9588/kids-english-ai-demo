@@ -71,7 +71,7 @@
           <div class="questionCloud"><span>👂</span><div><small>听一听，找一找</small><h2>哪个是 <b id="choiceWord">apple</b>？</h2></div><button id="choiceHear" aria-label="再听一次单词">🔊</button></div>
           <div id="choiceGrid" class="choiceGrid" role="group" aria-label="选择正确图片"></div>
           <div id="choiceFeedback" class="choiceFeedback" aria-live="polite">点一张图片试试看</div>
-          <button id="choiceNext" class="primaryAction nextAction" hidden>找对啦，去写字母 <span>→</span></button>
+          <div id="choiceActions" class="stageActions choiceActions" hidden><button id="choiceAgain" class="softAction">再选一次</button><button id="choiceNext" class="primaryAction">去写字母 <span>→</span></button></div>
         </section>
 
         <section id="writeStage" class="stage writeStage" data-stage="3" hidden>
@@ -86,7 +86,7 @@
             <canvas id="pad" width="900" height="340" aria-label="字母描写画板"></canvas>
           </div>
           <div id="writeProgress" class="writeProgress" role="progressbar" aria-label="当前字母书写进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="writeProgressBar"></i></div>
-          <div class="writeActions"><button id="undoWrite">↶ 撤销</button><button id="clearWrite">清除</button></div>
+          <div class="writeActions"><button id="undoWrite">↶ 撤销</button><button id="clearWrite">清除重写</button><button id="restartWord">↻ 从头重写本词</button></div>
           <small class="demoNote">写够后会自动进入下一个字母；演示版按笔画长度给予鼓励，正式版可接入字母形状识别。</small>
         </section>
 
@@ -96,7 +96,7 @@
           <button id="rewardSticker" class="rewardSticker" aria-label="播放 apple 的发音"><span id="rewardEmoji">🍎</span><b id="rewardWord">apple</b><i>NEW</i><em class="soundCue" aria-hidden="true">🔊</em></button>
           <p>听、说、认、写都完成了，小芽为你鼓掌！</p>
           <div class="rewardStats"><span>⭐ 今日获得 <b id="stars">0</b></span><span>🏅 收藏 <b id="rewardTotal">0</b></span></div>
-          <div class="stageActions rewardActions"><button id="playAgain" class="softAction">再玩一遍</button><button id="nextWord" class="primaryAction">下一个单词 <span>→</span></button></div>
+          <div class="stageActions rewardActions"><button id="playAgain" class="softAction">↻ 从听开始</button><button id="rewardWriteAgain" class="softAction">↻ 再写一遍</button><button id="nextWord" class="primaryAction">下一个单词 <span>→</span></button></div>
         </section>
 
         <p id="liveMessage" class="srOnly" aria-live="polite"></p>
