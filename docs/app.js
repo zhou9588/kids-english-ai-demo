@@ -102,17 +102,169 @@ function currentWord() {
   return items[current];
 }
 
-function speak(text) {
-  if (!('speechSynthesis' in window)) {
-    $('liveMessage').textContent = '当前浏览器暂不支持语音播放';
+const lessonWords = new Set(bank.map((item) => item.word));
+let activeAudio = null;
+let activeSpeech = null;
+let englishVoice = null;
+let playbackRun = 0;
+let playbackMessageTimer = null;
+
+function updateEnglishVoice() {
+  if (!('speechSynthesis' in window)) return;
+  const voices = window.speechSynthesis.getVoices();
+  englishVoice = voices.find((voice) => /^en[-_]US$/i.test(voice.lang))
+    || voices.find((voice) => /^en([-_]|$)/i.test(voice.lang))
+    || null;
+}
+
+if ('speechSynthesis' in window) {
+  updateEnglishVoice();
+  window.speechSynthesis.addEventListener?.('voiceschanged',updateEnglishVoice);
+}
+
+function releaseAudio(record) {
+  if (!record) return;
+  clearTimeout(record.startTimer);
+  record.element.removeEventListener('playing',record.onPlaying);
+  record.element.removeEventListener('ended',record.onEnded);
+  record.element.removeEventListener('error',record.onError);
+  try {
+    record.element.pause();
+    record.element.currentTime = 0;
+    record.element.removeAttribute('src');
+    record.element.load();
+  } catch { /* The media element may not have loaded metadata yet. */ }
+  if (activeAudio === record) activeAudio = null;
+}
+
+function releaseSpeech(record) {
+  if (!record) return;
+  clearTimeout(record.startTimer);
+  clearTimeout(record.resumeTimer);
+  record.utterance.onstart = null;
+  record.utterance.onend = null;
+  record.utterance.onerror = null;
+  if (activeSpeech === record) activeSpeech = null;
+}
+
+function stopPlayback() {
+  playbackRun += 1;
+  releaseAudio(activeAudio);
+  releaseSpeech(activeSpeech);
+  if ('speechSynthesis' in window) {
+    try { window.speechSynthesis.cancel(); } catch { /* Ignore engine shutdown errors. */ }
+  }
+  clearTimeout(playbackMessageTimer);
+  playbackMessageTimer = null;
+}
+
+function showPlaybackProblem(message,run) {
+  if (run !== playbackRun) return;
+  $('liveMessage').textContent = message;
+  $('guideMessage').textContent = `🔊 ${message}`;
+  clearTimeout(playbackMessageTimer);
+  playbackMessageTimer = setTimeout(() => {
+    if (run === playbackRun) setGuide(flowStep(currentWord().word));
+  },3600);
+}
+
+function speakWithSystem(text,run,usedFallback=false) {
+  if (run !== playbackRun) return;
+  if (!('speechSynthesis' in window) || !('SpeechSynthesisUtterance' in window)) {
+    showPlaybackProblem('当前浏览器暂时无法播放发音，请检查媒体音量后再试',run);
     return;
   }
-  window.speechSynthesis.cancel();
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.lang = 'en-US';
+
+  const synth = window.speechSynthesis;
+  releaseSpeech(activeSpeech);
+  try { synth.cancel(); } catch { /* Continue with a fresh utterance. */ }
+  updateEnglishVoice();
+  const utterance = new window.SpeechSynthesisUtterance(text);
+  utterance.lang = englishVoice?.lang || 'en-US';
+  if (englishVoice) utterance.voice = englishVoice;
   utterance.rate = 0.72;
   utterance.pitch = 1.08;
-  window.speechSynthesis.speak(utterance);
+  const record = {utterance,run,started:false,startTimer:null,resumeTimer:null};
+  activeSpeech = record;
+  const finish = () => releaseSpeech(record);
+  utterance.onstart = () => {
+    if (run !== playbackRun || activeSpeech !== record) return;
+    record.started = true;
+    clearTimeout(record.startTimer);
+    clearTimeout(record.resumeTimer);
+  };
+  utterance.onend = finish;
+  utterance.onerror = (event) => {
+    const isCurrent = run === playbackRun && activeSpeech === record;
+    finish();
+    if (isCurrent && !['canceled','interrupted'].includes(event.error)) {
+      showPlaybackProblem('发音暂时没有播放出来，请再点一次',run);
+    }
+  };
+  record.startTimer = setTimeout(() => {
+    if (run !== playbackRun || activeSpeech !== record || record.started) return;
+    finish();
+    try { synth.cancel(); } catch { /* The start timeout already handles failure. */ }
+    showPlaybackProblem('系统发音启动较慢，请再点一次',run);
+  },2100);
+
+  try {
+    if (synth.paused) synth.resume();
+    // Some Android browsers leave the speech engine paused after interruption.
+    record.resumeTimer = setTimeout(() => {
+      if (run === playbackRun && synth.paused) synth.resume();
+    },0);
+    synth.speak(utterance);
+    if (usedFallback) showPlaybackProblem('内置音频暂时不可用，已切换为系统英文发音',run);
+  } catch {
+    finish();
+    showPlaybackProblem('发音暂时没有播放出来，请再点一次',run);
+  }
+}
+
+function speak(text) {
+  stopPlayback();
+  const run = playbackRun;
+  const normalized = String(text).trim().toLowerCase();
+
+  if (!lessonWords.has(normalized)) {
+    speakWithSystem(text,run);
+    return;
+  }
+
+  const audio = new Audio(`audio/${normalized}.wav`);
+  audio.preload = 'auto';
+  const record = {
+    element:audio,run,started:false,fellBack:false,startTimer:null,
+    onPlaying:null,onEnded:null,onError:null
+  };
+  activeAudio = record;
+  const fallback = () => {
+    if (record.fellBack || run !== playbackRun || activeAudio !== record) return;
+    record.fellBack = true;
+    releaseAudio(record);
+    speakWithSystem(normalized,run,true);
+  };
+  record.onPlaying = () => {
+    if (run !== playbackRun || activeAudio !== record) return;
+    record.started = true;
+    clearTimeout(record.startTimer);
+  };
+  record.onEnded = () => releaseAudio(record);
+  record.onError = fallback;
+  audio.addEventListener('playing',record.onPlaying);
+  audio.addEventListener('ended',record.onEnded);
+  audio.addEventListener('error',record.onError);
+  record.startTimer = setTimeout(() => {
+    if (run === playbackRun && activeAudio === record && !record.started) fallback();
+  },4000);
+
+  try {
+    const started = audio.play();
+    if (started?.then) started.then(record.onPlaying).catch(fallback);
+  } catch {
+    fallback();
+  }
 }
 
 const guideCopy = [
@@ -129,6 +281,7 @@ function setGuide(step, message) {
 }
 
 function render() {
+  stopPlayback();
   cleanupMic();
   cleanupTrace();
   const items = lesson();
