@@ -80,13 +80,15 @@
             <button id="hearWrite" class="roundSound" aria-label="播放当前单词">🔊</button>
           </div>
           <div id="letterTrail" class="letterTrail" aria-label="字母书写进度"></div>
-          <div class="tracePrompt">沿着浅色字母描一遍：<b id="letterName">a</b></div>
-          <div class="canvasWrap">
+          <div class="tracePrompt"><span id="traceStatus">先看小芽示范，再轮到你：</span><b id="letterName">a</b></div>
+          <div id="canvasWrap" class="canvasWrap">
             <div class="guideLines" aria-hidden="true"><i></i><i></i><i></i></div><span id="traceLetter">a</span>
+            <canvas id="guidePad" class="guideCanvas" width="900" height="340" aria-hidden="true"></canvas>
             <canvas id="pad" width="900" height="340" aria-label="字母描写画板"></canvas>
           </div>
-          <div class="writeActions"><button id="undoWrite">↶ 撤销</button><button id="clearWrite">清除</button><button id="finishLetter" class="primaryAction" disabled>这个字母写好了 <span>→</span></button></div>
-          <small class="demoNote">演示版以完成笔画给予鼓励；正式版可接入字母形状识别。</small>
+          <div id="writeProgress" class="writeProgress" role="progressbar" aria-label="当前字母书写进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="writeProgressBar"></i></div>
+          <div class="writeActions"><button id="watchTrace">▶ 再看示范</button><button id="undoWrite">↶ 撤销</button><button id="clearWrite">清除</button></div>
+          <small class="demoNote">写够后会自动进入下一个字母；演示版按笔画长度给予鼓励，正式版可接入字母形状识别。</small>
         </section>
 
         <section id="rewardStage" class="stage rewardStage" data-stage="4" hidden>
